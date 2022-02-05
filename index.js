@@ -1,14 +1,21 @@
 #!/usr/bin/env node
 
 import chalk from "chalk";
+// To capture user's inputs
 import inquirer from "inquirer";
-import gradient from "gradient-string";
+// To animate simple console logs
 import chalkAnimation from "chalk-animation";
+// To display huge ascii character texts
 import figlet from "figlet";
+// For applying gradient onto huge texts
+import gradient from "gradient-string";
+// Importing the spinner which loads when an answer is selected
 import { createSpinner } from "nanospinner";
+// To use the fetch API
 import fetch from "node-fetch";
 import Audic from "audic";
-const audic = new Audic(
+// Fetching the music file that we'll play when the game is over.
+const imperialMarch = new Audic(
   "https://ia800304.us.archive.org/30/items/StarWarsTheImperialMarchDarthVadersTheme/Star%20Wars-%20The%20Imperial%20March%20%28Darth%20Vader%27s%20Theme%29.mp3#t=00:00:09"
 );
 
@@ -20,6 +27,7 @@ let fetchQuestions = async () => {
     "https://opentdb.com/api.php?amount=5&category=9&difficulty=easy&type=multiple"
   );
   let res = await req.json();
+  // Filtering and storing all questions, their correct answers and other options; as the API response contains other unnecessary data too
   res.results.forEach((elem) => {
     questions.push(elem.question);
     corrects.push(elem.correct_answer);
@@ -27,11 +35,11 @@ let fetchQuestions = async () => {
       [elem.correct_answer, ...elem.incorrect_answers].sort((a, b) => a - b)
     );
   });
-  //   console.log(options);
 };
-
+// Will store the player's name inside this and will increment the score variable by 1 everytime the player gets the question's answer correct!
 let playerName,
   score = 0;
+// To make the gameplay a little slower to make it quite realistic
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 
 await welcome();
@@ -44,13 +52,13 @@ await question4();
 await question5();
 await winner();
 
+// Welcome text
 async function welcome() {
   const rainbowTitle = chalkAnimation.rainbow(
     "A Fun Trivia Quiz Game by Jeel Patel!\n"
   );
   await sleep();
   rainbowTitle.stop();
-
   console.log(`
   ${chalk.bgBlue(" HOW TO PLAY ")}
   There will be questions on everything.
@@ -59,7 +67,7 @@ async function welcome() {
   
   `);
 }
-
+// Asking user their name
 async function askName() {
   const answers = await inquirer.prompt({
     name: "player_name",
@@ -71,7 +79,7 @@ async function askName() {
   });
   playerName = answers.player_name;
 }
-
+// Starting to bombard questions one by one
 async function question1() {
   const answers = await inquirer.prompt({
     name: "question_1",
@@ -117,7 +125,7 @@ async function question5() {
   });
   return handleAnswer(answers.question_5 == corrects[4]);
 }
-
+// Checking if the answer is true or not and respond accordingly
 async function handleAnswer(isCorrect) {
   const spinner = createSpinner("Checking answer...").start();
   await sleep();
@@ -135,10 +143,10 @@ async function handleAnswer(isCorrect) {
     // process.exit(1);
   }
 }
-
+// Announcing the score from 5 at the end of the game
 async function winner() {
   console.clear();
-  await audic.play();
+  await imperialMarch.play();
   const msg = `Congrats, ${playerName} !\nHere's your $ 1 , 0 0 0 , 0 0 0`;
   const ender = chalkAnimation.glitch(`Your Score: ${score}/5\n`);
   figlet(msg, (err, data) => {
@@ -146,6 +154,6 @@ async function winner() {
     ender.start();
   });
   await sleep(20000);
-  audic.destroy();
+  imperialMarch.destroy();
   process.exit(1);
 }
